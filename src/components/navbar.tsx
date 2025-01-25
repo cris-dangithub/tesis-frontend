@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Heart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+// import { Button } from '@/components/ui/button';
 import NavButton from './ui/nav-button';
 
 export function Navbar() {
