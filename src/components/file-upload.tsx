@@ -9,15 +9,26 @@ export function FileUpload() {
    const [files, setFiles] = useState<File[]>([]);
 
    const onDrop = useCallback((acceptedFiles: File[]) => {
-      setFiles(prev => [...prev, ...acceptedFiles]);
+      
+      setFiles([...acceptedFiles]);
    }, []);
 
    const { getRootProps, getInputProps, isDragActive } = useDropzone({
       onDrop,
       accept: {
-         'application/pdf': ['.pdf'],
+         'application/xlsx': ['.xlsx'],
       },
+      maxFiles: 1,
+      multiple: false,
    });
+
+   const handleSend = () => {
+      if (files.length === 0) {
+         console.log('No hay archivos para enviar');
+      } else {
+         console.log('Archivo enviado:', files);
+      }
+   };
 
    return (
       <div className="container mx-auto px-4 py-16 max-w-3xl">
@@ -33,16 +44,11 @@ export function FileUpload() {
 
          <div
             {...getRootProps()}
-            className={`
-               border-2 border-dashed rounded-lg p-12
-               flex flex-col items-center justify-center
-               transition-colors
-               ${
-                  isDragActive
-                     ? 'border-green-500 bg-green-50'
-                     : 'border-gray-300 hover:border-green-500'
-               }
-            `}
+            className={`border-2 border-dashed rounded-lg p-12 flex flex-col items-center justify-center transition-colors ${
+               isDragActive
+                  ? 'border-green-500 bg-green-50'
+                  : 'border-gray-300 hover:border-green-500'
+            }`}
          >
             <input {...getInputProps()} />
 
@@ -58,7 +64,9 @@ export function FileUpload() {
 
             {files.length > 0 && (
                <div className="mt-6 w-full">
-                  <h3 className="font-medium mb-2 text-gray-400">Archivo seleccionado:</h3>
+                  <h3 className="font-medium mb-2 text-gray-400">
+                     Archivo seleccionado:
+                  </h3>
                   <ul className="space-y-2">
                      {files.map((file, index) => (
                         <li
@@ -71,6 +79,16 @@ export function FileUpload() {
                   </ul>
                </div>
             )}
+         </div>
+
+         <div className="mt-8 text-center">
+            <Button
+               size="lg"
+               onClick={handleSend}
+               className="bg-blue-600 hover:bg-blue-800 text-lg px-8 py-4 rounded-lg"
+            >
+               Enviar
+            </Button>
          </div>
       </div>
    );
