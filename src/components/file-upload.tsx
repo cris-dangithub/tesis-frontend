@@ -8,6 +8,7 @@ import { Upload } from 'lucide-react';
 export function FileUpload() {
    const [files, setFiles] = useState<File[]>([]);
    const [loadingSendButton, setLoadingSendButton] = useState(false);
+   const [documentNumber, setDocumentNumber] = useState<string>(''); // Estado para el número de documento
 
    const onDrop = useCallback(async (acceptedFiles: File[]) => {
       console.log({ acceptedFiles });
@@ -26,66 +27,72 @@ export function FileUpload() {
    });
 
    const handleSend = async () => {
-      if (files.length === 0) {
-         console.log('No hay archivos para enviar');
-      } else {
-         const file = files[0];
+      if (files.length === 0 || !documentNumber) {
+         console.log(
+            'No hay archivos para enviar o el número de documento no está rellenado'
+         );
+         return;
+      }
 
-         try {
-            setLoadingSendButton(true);
-            // Llama a la Lambda para obtener la URL prefirmada y los campos adicionales
-            const response = await fetch(
-               'https://2fynmc4qlf7sfrd5bbdmp35msi0klkdg.lambda-url.us-west-2.on.aws/',
-               {
-                  method: 'POST',
-                  headers: {
-                     'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                     type: 'post-presigned-url', // Campo requerido para identificar el tipo de operación
-                     bucket_name: 'usco-csp-abo', // Cambia esto por tu bucket
-                     object_key: file.name,
-                  }),
-               }
+      const file = files[0];
+      const newFileName = `${documentNumber}-BASE.xlsx`; // Nuevo nombre del archivo
+
+      try {
+         setLoadingSendButton(true);
+
+         // Llama a la Lambda para obtener la URL prefirmada y los campos adicionales
+         const response = await fetch(
+            'https://2fynmc4qlf7sfrd5bbdmp35msi0klkdg.lambda-url.us-west-2.on.aws/',
+            {
+               method: 'POST',
+               headers: {
+                  'Content-Type': 'application/json',
+               },
+               body: JSON.stringify({
+                  type: 'post-presigned-url', // Campo requerido para identificar el tipo de operación
+                  bucket_name: 'usco-csp-abo', // Cambia esto por tu bucket
+                  object_key: newFileName, // Usar el nuevo nombre del archivo
+               }),
+            }
+         );
+
+         if (!response.ok) {
+            throw new Error(
+               `Error al obtener la URL prefirmada: ${response.statusText}`
             );
-
-            if (!response.ok) {
-               throw new Error(
-                  `Error al obtener la URL prefirmada: ${response.statusText}`
-               );
-            }
-
-            const data = await response.json();
-            const { url, fields } = data; // Asegúrate de que la respuesta incluya "url" y "fields"
-
-            // Crea un objeto FormData y agrega los campos adicionales
-            const formData = new FormData();
-            Object.keys(fields).forEach(key => {
-               formData.append(key, fields[key]);
-            });
-
-            // Agrega el archivo al FormData con la clave "file"
-            formData.append('file', file);
-
-            // Sube el archivo a S3 usando la URL prefirmada y el FormData
-            const uploadResponse = await fetch(url, {
-               method: 'POST', // Usa POST si la URL prefirmada lo requiere
-               body: formData,
-            });
-
-            if (!uploadResponse.ok) {
-               throw new Error(
-                  `Error al subir el archivo: ${uploadResponse.statusText}`
-               );
-            }
-
-            setFiles([]);
-            console.log('Archivo subido con éxito a S3');
-         } catch (error) {
-            console.error('Error manejando el archivo:', error);
-         } finally {
-            setLoadingSendButton(false);
          }
+
+         const data = await response.json();
+         const { url, fields } = data; // Asegúrate de que la respuesta incluya "url" y "fields"
+
+         // Crea un objeto FormData y agrega los campos adicionales
+         const formData = new FormData();
+         Object.keys(fields).forEach(key => {
+            formData.append(key, fields[key]);
+         });
+
+         // Agrega el archivo al FormData con la clave "file"
+         formData.append('file', file, newFileName); // Usar el nuevo nombre del archivo
+
+         // Sube el archivo a S3 usando la URL prefirmada y el FormData
+         const uploadResponse = await fetch(url, {
+            method: 'POST', // Usa POST si la URL prefirmada lo requiere
+            body: formData,
+         });
+
+         if (!uploadResponse.ok) {
+            throw new Error(
+               `Error al subir el archivo: ${uploadResponse.statusText}`
+            );
+         }
+
+         setFiles([]);
+         setDocumentNumber(''); // Limpiar el campo del número de documento
+         console.log('Archivo subido con éxito a S3');
+      } catch (error) {
+         console.error('Error manejando el archivo:', error);
+      } finally {
+         setLoadingSendButton(false);
       }
    };
 
@@ -141,11 +148,29 @@ export function FileUpload() {
          </div>
 
          <div className="mt-8 text-center">
+            <div className="mb-4">
+               <input
+                  type="text"
+                  value={documentNumber}
+                  onChange={e => {
+                     const value = e.target.value;
+                     if (/^\d*$/.test(value)) {
+                        // Solo permite números
+                        setDocumentNumber(value);
+                     }
+                  }}
+                  placeholder="Número de documento"
+                  className="w-full p-3 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+               />
+            </div>
+
             <Button
                size="lg"
                onClick={handleSend}
                className="bg-blue-600 hover:bg-blue-800 text-lg px-8 py-4 rounded-lg"
-               disabled={files.length === 0 || loadingSendButton}
+               disabled={
+                  files.length === 0 || !documentNumber || loadingSendButton
+               }
                loading={loadingSendButton}
             >
                Enviar
