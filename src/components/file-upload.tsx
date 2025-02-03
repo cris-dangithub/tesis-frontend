@@ -7,10 +7,13 @@ import { Upload } from 'lucide-react';
 
 export function FileUpload() {
    const [files, setFiles] = useState<File[]>([]);
+   const [loadingSendButton, setLoadingSendButton] = useState(false);
 
-   const onDrop = useCallback((acceptedFiles: File[]) => {
-      
-      setFiles([...acceptedFiles]);
+   const onDrop = useCallback(async (acceptedFiles: File[]) => {
+      console.log({ acceptedFiles });
+      if (acceptedFiles.length > 0) {
+         setFiles(acceptedFiles);
+      }
    }, []);
 
    const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -22,11 +25,67 @@ export function FileUpload() {
       multiple: false,
    });
 
-   const handleSend = () => {
+   const handleSend = async () => {
       if (files.length === 0) {
          console.log('No hay archivos para enviar');
       } else {
-         console.log('Archivo enviado:', files);
+         const file = files[0];
+
+         try {
+            setLoadingSendButton(true);
+            // Llama a la Lambda para obtener la URL prefirmada y los campos adicionales
+            const response = await fetch(
+               'https://2fynmc4qlf7sfrd5bbdmp35msi0klkdg.lambda-url.us-west-2.on.aws/',
+               {
+                  method: 'POST',
+                  headers: {
+                     'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                     type: 'post-presigned-url', // Campo requerido para identificar el tipo de operación
+                     bucket_name: 'usco-csp-abo', // Cambia esto por tu bucket
+                     object_key: file.name,
+                  }),
+               }
+            );
+
+            if (!response.ok) {
+               throw new Error(
+                  `Error al obtener la URL prefirmada: ${response.statusText}`
+               );
+            }
+
+            const data = await response.json();
+            const { url, fields } = data; // Asegúrate de que la respuesta incluya "url" y "fields"
+
+            // Crea un objeto FormData y agrega los campos adicionales
+            const formData = new FormData();
+            Object.keys(fields).forEach(key => {
+               formData.append(key, fields[key]);
+            });
+
+            // Agrega el archivo al FormData con la clave "file"
+            formData.append('file', file);
+
+            // Sube el archivo a S3 usando la URL prefirmada y el FormData
+            const uploadResponse = await fetch(url, {
+               method: 'POST', // Usa POST si la URL prefirmada lo requiere
+               body: formData,
+            });
+
+            if (!uploadResponse.ok) {
+               throw new Error(
+                  `Error al subir el archivo: ${uploadResponse.statusText}`
+               );
+            }
+
+            setFiles([]);
+            console.log('Archivo subido con éxito a S3');
+         } catch (error) {
+            console.error('Error manejando el archivo:', error);
+         } finally {
+            setLoadingSendButton(false);
+         }
       }
    };
 
@@ -86,6 +145,8 @@ export function FileUpload() {
                size="lg"
                onClick={handleSend}
                className="bg-blue-600 hover:bg-blue-800 text-lg px-8 py-4 rounded-lg"
+               disabled={files.length === 0 || loadingSendButton}
+               loading={loadingSendButton}
             >
                Enviar
             </Button>
