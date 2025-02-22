@@ -159,7 +159,7 @@ export function FileUpload() {
                         setDocumentNumber(value);
                      }
                   }}
-                  placeholder="Número de documento"
+                  placeholder="Número de documento (Para identificar el archivo)"
                   className="w-full p-3 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                />
             </div>
