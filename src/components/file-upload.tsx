@@ -4,6 +4,8 @@ import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
+import { PresignedURLManagerService } from '@/lib/services/lambda';
+import { BUCKET_NAME } from '@/lib/constants/services';
 
 export function FileUpload() {
    const [files, setFiles] = useState<File[]>([]);
@@ -39,31 +41,15 @@ export function FileUpload() {
 
       try {
          setLoadingSendButton(true);
-
-         // Llama a la Lambda para obtener la URL prefirmada y los campos adicionales
-         const response = await fetch(
-            'https://2fynmc4qlf7sfrd5bbdmp35msi0klkdg.lambda-url.us-west-2.on.aws/',
-            {
-               method: 'POST',
-               headers: {
-                  'Content-Type': 'application/json',
-               },
-               body: JSON.stringify({
-                  type: 'post-presigned-url', // Campo requerido para identificar el tipo de operación
-                  bucket_name: 'usco-csp-abo', // Cambia esto por tu bucket
-                  object_key: newFileName, // Usar el nuevo nombre del archivo
-               }),
-            }
-         );
-
-         if (!response.ok) {
-            throw new Error(
-               `Error al obtener la URL prefirmada: ${response.statusText}`
-            );
+         const presignedURLResponse = await PresignedURLManagerService({
+            event_name: 'post-presigned-url',
+            object_key: `BASE/${newFileName}`,
+         });
+         if (!presignedURLResponse) {
+            throw new Error('Error al obtener la URL prefirmada');
          }
 
-         const data = await response.json();
-         const { url, fields } = data; // Asegúrate de que la respuesta incluya "url" y "fields"
+         const { url, fields } = presignedURLResponse; // Asegúrate de que la respuesta incluya "url" y "fields"
 
          // Crea un objeto FormData y agrega los campos adicionales
          const formData = new FormData();
