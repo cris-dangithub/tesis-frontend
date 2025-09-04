@@ -1,10 +1,13 @@
+"use client";
 import Link from 'next/link';
 import { Heart } from 'lucide-react';
+import { usePathname } from "next/navigation";
 // import { Button } from '@/components/ui/button';
 import NavButton from './ui/nav-button';
 
 export function Navbar() {
-   // get current url from the
+   const pathname = usePathname();
+
 
    return (
       <>
@@ -19,21 +22,27 @@ export function Navbar() {
                </Link>
 
                <div className="flex items-center gap-6 mx-6">
-                  <NavButton to="/about" status="inactive" content="INICIO" />
-                  <NavButton to="/" status="active" content="SUBIR CARTILLA" />
+                  <NavButton to="/inicio" status={pathname === "/inicio" ? "active" : "inactive"} content="INICIO" />
+                  <NavButton to="/" status={pathname === "/" ? "active" : "inactive"} content="SUBIR CARTILLA" />
                   <NavButton
                      to="/results"
-                     status="inactive"
+                     status={
+                        pathname === "/results" ? "active" : "inactive"
+                     }
                      content="DESCARGAR RESULTADOS"
                   />
                   <NavButton
                      to="/tutorial"
-                     status="inactive"
+                     status={
+                        pathname === "/tutorial" ? "active" : "inactive"
+                     }
                      content="TUTORIAL"
                   />
                   <NavButton
-                     to="/countact-us"
-                     status="inactive"
+                     to="/contact-us"
+                     status={
+                        pathname === "/contact-us" ? "active" : "inactive"
+                     }
                      content="CONTACTANOS"
                   />
                   {/* <div className="relative group">
