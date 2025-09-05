@@ -38,16 +38,28 @@ const pasos = [
 
 const glosario = [
   {
-    termino: "Cartilla",
-    definicion: "Documento PDF o imagen que contiene la información a procesar.",
+    termino: "Barras de acero",
+    definicion: "Elementos cilíndricos de acero utilizados como refuerzo en estructuras de concreto. Proveen resistencia a la tracción y ayudan a soportar cargas estructurales.",
   },
   {
-    termino: "Resultados",
-    definicion: "Archivos generados por la plataforma después de procesar tu cartilla.",
+    termino: "Diámetro de las barras",
+    definicion: "Corresponde al grosor de la barra de acero, especificado en milímetros según la NSR-10. Generalmente se identifican por un número de barra (por ejemplo, #3, #4, #5), donde cada número corresponde a un diámetro estándar.",
   },
   {
-    termino: "Soporte",
-    definicion: "Ayuda o asistencia técnica proporcionada por el equipo de la plataforma.",
+    termino: "Peso de las barras por número de barra",
+    definicion: "El peso por metro de cada barra depende de su número y está especificado en la NSR-10. Por ejemplo, una barra #4 pesa aproximadamente 0.668 kg/m. Esta información es fundamental para cálculos estructurales y de presupuesto.",
+  },
+  {
+    termino: "Patrón de corte",
+    definicion: "Esquema o secuencia que indica cómo deben cortarse las barras de acero para minimizar desperdicios y optimizar el uso del material.",
+  },
+  {
+    termino: "Método Búfalo",
+    definicion: "Técnica de optimización utilizada para determinar la mejor manera de cortar barras de acero, minimizando el desperdicio y maximizando la eficiencia en el uso del material.",
+  },
+  {
+    termino: "Cartilla de acero",
+    definicion: "Documento (generalmente en PDF o imagen) que contiene la información de las barras de acero a utilizar en un proyecto, incluyendo cantidades, longitudes y especificaciones técnicas.",
   },
 ];
 
@@ -88,21 +100,13 @@ export default function TutorialGuide() {
           </div>
         ))}
       </div>
-      <div className="mt-10 text-center text-base text-gray-500">
-        ¿Tienes más dudas?{" "}
-        <Link
-          href="/contact-us"
-          className="font-semibold text-green-600 underline hover:text-green-800 transition"
-        >
-          Escríbenos
-        </Link>{" "}
-        en la sección de contacto.
-      </div>
 
       {/* Glosario */}
       <div className="mt-14">
-        <h2 className="text-xl font-bold text-gray-700 mb-4">Glosario</h2>
-        <ul className="list-disc list-inside text-gray-600 space-y-2">
+        <h2 className="text-2xl font-extrabold text-blue-700 mb-4 tracking-wide underline decoration-blue-300">
+          Glosario de términos clave
+        </h2>
+        <ul className="list-disc list-inside text-gray-600 space-y-3">
           {glosario.map((item, idx) => (
             <li key={idx}>
               <span className="font-semibold text-gray-800">{item.termino}:</span> {item.definicion}
@@ -113,8 +117,10 @@ export default function TutorialGuide() {
 
       {/* FAQ */}
       <div className="mt-14">
-        <h2 className="text-xl font-bold text-gray-700 mb-4">Preguntas Frecuentes</h2>
-        <div className="space-y-3 text-gray-600">
+        <h2 className="text-2xl font-extrabold text-green-700 mb-4 tracking-wide underline decoration-green-300">
+          Preguntas Frecuentes (FAQ)
+        </h2>
+        <div className="space-y-4 text-gray-600">
           {faqs.map((faq, idx) => (
             <div key={idx}>
               <span className="font-semibold text-gray-800">{faq.pregunta}</span>
@@ -123,6 +129,17 @@ export default function TutorialGuide() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="mt-14 text-center text-base text-gray-500">
+        ¿Tienes más dudas?{" "}
+        <Link
+          href="/contact-us"
+          className="font-semibold text-green-600 underline hover:text-green-800 transition"
+        >
+          Escríbenos
+        </Link>{" "}
+        en la sección de contacto.
       </div>
     </section>
   );
