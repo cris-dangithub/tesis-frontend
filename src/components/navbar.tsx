@@ -26,25 +26,18 @@ export function Navbar() {
                   <NavButton to="/" status={pathname === "/" ? "active" : "inactive"} content="INICIO" />
                   <NavButton to="/subir-cartilla" status={pathname === "/subir-cartilla" ? "active" : "inactive"} content="SUBIR CARTILLA" />
                   <NavButton
-                     to="/results"
-                     status={
-                        pathname === "/results" ? "active" : "inactive"
-                     }
-                     content="DESCARGAR RESULTADOS"
-                  />
-                  <NavButton
                      to="/tutorial"
                      status={
                         pathname === "/tutorial" ? "active" : "inactive"
                      }
-                     content="TUTORIAL"
+                     content="GUÍA RÁPIDA"
                   />
                   <NavButton
                      to="/contact-us"
                      status={
                         pathname === "/contact-us" ? "active" : "inactive"
                      }
-                     content="CONTACTANOS"
+                     content="CONTÁCTANOS"
                   />
                   {/* <div className="relative group">
                   <button className="text-gray-700 hover:text-gray-900 font-medium flex items-center gap-1">

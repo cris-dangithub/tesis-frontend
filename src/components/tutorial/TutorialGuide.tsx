@@ -1,9 +1,15 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { Home, Upload, Loader2, Download, BookOpen, Mail } from "lucide-react";
+import { Home, Upload, Loader2, BookOpen, Mail } from "lucide-react";
 
-const pasos = [
+type Paso = {
+  titulo: string;
+  descripcion: React.ReactNode;
+  icon: React.ReactNode;
+};
+
+const pasos: Paso[] = [
   {
     titulo: "Ir a la página principal",
     descripcion: "Haz clic en 'INICIO' en la barra de navegación para regresar a la página principal en cualquier momento.",
@@ -11,7 +17,25 @@ const pasos = [
   },
   {
     titulo: "Subir tu cartilla",
-    descripcion: "Selecciona 'SUBIR CARTILLA' en la barra de navegación. Haz clic en el botón para seleccionar tu archivo PDF o imagen y súbelo.",
+    descripcion: (
+      <>
+        Selecciona 'SUBIR CARTILLA' en la barra de navegación. Haz clic en el botón para seleccionar tu archivo.
+        <br />
+        <span className="font-bold text-black">
+          Solo se aceptan archivos en formato XLSX que sigan la plantilla establecida.
+        </span>
+        <br />
+        Puedes descargar la plantilla aquí:{" "}
+        <a
+          href="/Planilla_Cartilla.xlsx"
+          download
+          className="text-green-600 underline hover:text-green-800 font-semibold"
+        >
+          Descargar aquí
+        </a>
+        .
+      </>
+    ),
     icon: <Upload className="h-8 w-8 text-blue-500" />,
   },
   {
@@ -20,18 +44,13 @@ const pasos = [
     icon: <Loader2 className="h-8 w-8 text-yellow-500 animate-spin" />,
   },
   {
-    titulo: "Descargar resultados",
-    descripcion: "Haz clic en 'DESCARGAR RESULTADOS' para ver y descargar los archivos generados por la plataforma.",
-    icon: <Download className="h-8 w-8 text-purple-500" />,
-  },
-  {
-    titulo: "Consultar el tutorial",
-    descripcion: "Si tienes dudas, vuelve a esta sección haciendo clic en 'TUTORIAL'. Aquí encontrarás la guía paso a paso.",
+    titulo: "Consultar la guía rápida",
+    descripcion: "Si tienes dudas, vuelve a esta sección haciendo clic en 'GUÍA RÁPIDA'. Aquí encontrarás la guía paso a paso.",
     icon: <BookOpen className="h-8 w-8 text-pink-500" />,
   },
   {
     titulo: "Contactar soporte",
-    descripcion: "Si necesitas ayuda adicional, haz clic en 'CONTACTANOS' para enviar tus preguntas o comentarios.",
+    descripcion: "Si necesitas ayuda adicional, haz clic en 'CONTÁCTANOS' para enviar tus preguntas o comentarios.",
     icon: <Mail className="h-8 w-8 text-red-500" />,
   },
 ];
@@ -59,79 +78,102 @@ const glosario = [
   },
   {
     termino: "Cartilla de acero",
-    definicion: "Documento (generalmente en PDF o imagen) que contiene la información de las barras de acero a utilizar en un proyecto, incluyendo cantidades, longitudes y especificaciones técnicas.",
+    definicion: "Documento (en XLSX) que contiene la información de las barras de acero a utilizar en un proyecto, incluyendo cantidades, longitudes y especificaciones técnicas.",
+  },
+  {
+    termino: "N° de orden",
+    definicion: "Número consecutivo que identifica cada registro o elemento de la lista.",
+  },
+  {
+    termino: "Elemento",
+    definicion: "Nombre o descripción del elemento estructural al que pertenece la barra, por ejemplo: viga, columna, losa, etc.",
   },
 ];
 
 const faqs = [
   {
     pregunta: "¿Qué tipo de archivos puedo subir?",
-    respuesta: "Puedes subir archivos en formato PDF o imagen (JPG, PNG).",
+    respuesta: "Puedes subir archivos únicamente en formato XLSX que sigan la plantilla proporcionada.",
   },
   {
     pregunta: "¿Cuánto tarda el procesamiento?",
     respuesta: "Normalmente solo unos segundos, dependiendo del tamaño del archivo.",
   },
-  {
-    pregunta: "¿Dónde descargo mis resultados?",
-    respuesta: "En la sección 'DESCARGAR RESULTADOS' de la barra de navegación.",
-  },
 ];
 
 export default function TutorialGuide() {
   return (
-    <section className="max-w-3xl mx-auto mt-24 p-8 bg-white rounded-xl shadow-lg">
-      <h1 className="text-3xl font-extrabold mb-10 text-center text-gray-800">
-        <span className="text-green-600">Tutorial</span> de Uso
-      </h1>
-      <div className="grid gap-8">
-        {pasos.map((paso, idx) => (
-          <div
-            key={idx}
-            className="flex items-start gap-5 bg-gray-50 rounded-lg p-5 shadow transition hover:scale-[1.02] hover:shadow-md"
-          >
-            <div className="flex-shrink-0">{paso.icon}</div>
-            <div>
-              <h2 className="text-lg font-bold text-gray-700 mb-1">
-                {idx + 1}. {paso.titulo}
-              </h2>
-              <p className="text-gray-600">{paso.descripcion}</p>
+    <section className="max-w-6xl mx-auto mt-24 p-4 bg-white rounded-xl shadow-lg">
+      <div className="flex flex-col md:flex-row gap-16">
+        {/* Guía rápida - Izquierda */}
+        <div className="md:w-1/2 flex flex-col">
+          <div className="mb-10">
+            <h2 className="text-2xl font-bold text-gray-700 mb-6 text-center md:text-left">
+              Pasos para utilizar la plataforma
+            </h2>
+            <div className="grid gap-8">
+              {pasos.map((paso, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-start gap-5 bg-gray-50 rounded-lg p-5 shadow transition hover:scale-[1.02] hover:shadow-md"
+                >
+                  <div className="flex-shrink-0">{paso.icon}</div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-700 mb-1">
+                      {idx + 1}. {paso.titulo}
+                    </h3>
+                    <p className="text-gray-600">{paso.descripcion}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
-
-      {/* Glosario */}
-      <div className="mt-14">
-        <h2 className="text-2xl font-extrabold text-blue-700 mb-4 tracking-wide underline decoration-blue-300">
-          Glosario de términos clave
-        </h2>
-        <ul className="list-disc list-inside text-gray-600 space-y-3">
-          {glosario.map((item, idx) => (
-            <li key={idx}>
-              <span className="font-semibold text-gray-800">{item.termino}:</span> {item.definicion}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* FAQ */}
-      <div className="mt-14">
-        <h2 className="text-2xl font-extrabold text-green-700 mb-4 tracking-wide underline decoration-green-300">
-          Preguntas Frecuentes (FAQ)
-        </h2>
-        <div className="space-y-4 text-gray-600">
-          {faqs.map((faq, idx) => (
-            <div key={idx}>
-              <span className="font-semibold text-gray-800">{faq.pregunta}</span>
-              <br />
-              {faq.respuesta}
+        </div>
+        {/* Línea divisoria vertical */}
+        <div className="hidden md:flex w-px bg-gray-300 mx-2 rounded-full"></div>
+        {/* Glosario y FAQ - Derecha */}
+        <div className="md:w-1/2 flex flex-col gap-12">
+          {/* Glosario */}
+          <div>
+            <h2 className="text-2xl font-extrabold mb-4 tracking-wide text-center md:text-left"
+                style={{
+                  background: "linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent"
+                }}>
+              Glosario de Términos Clave
+            </h2>
+            <ul className="list-disc list-inside text-gray-600 space-y-3">
+              {glosario.map((item, idx) => (
+                <li key={idx}>
+                  <span className="font-semibold text-gray-800">{item.termino}:</span> {item.definicion}
+                </li>
+              ))}
+            </ul>
+          </div>
+          {/* FAQ */}
+          <div>
+            <h2 className="text-2xl font-extrabold mb-4 tracking-wide text-center md:text-left"
+                style={{
+                  background: "linear-gradient(90deg, #22c55e 0%, #16a34a 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent"
+                }}>
+              Preguntas Frecuentes (FAQ)
+            </h2>
+            <div className="space-y-4 text-gray-600">
+              {faqs.map((faq, idx) => (
+                <div key={idx}>
+                  <span className="font-semibold text-gray-800">{faq.pregunta}</span>
+                  <br />
+                  {faq.respuesta}
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
-
-      <div className="mt-14 text-center text-base text-gray-500">
+      <div className="mt-16 text-center text-base text-gray-500">
         ¿Tienes más dudas?{" "}
         <Link
           href="/contact-us"
