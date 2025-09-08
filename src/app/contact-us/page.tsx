@@ -36,7 +36,7 @@ export default function ContactUs() {
         <div className="bg-white p-6 rounded shadow-md mt-4">
           <form
             className="flex flex-col gap-4"
-            action="https://formspree.io/f/mvgbdwvk"//Link de Formspree
+            action="https://formspree.io/f/xgvlrnje"//Link de Formspree
             method="POST"
           >
             <input
