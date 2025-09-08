@@ -9,22 +9,34 @@ export default function ContactUs() {
         <p className="mb-6 text-center text-gray-700 font-medium">
           ¿Tienes dudas, sugerencias o necesitas soporte? ¡Escríbenos!
         </p>
-        <div className="bg-white p-6 rounded shadow-md flex flex-col items-center gap-6 justify-center">
-          <ul className="mb-4 flex-1 text-center">
-            <li className="mb-2">
-              <strong className="font-bold text-black">Email:</strong>{" "}
-              <span className="text-black">Lizethgasca990@gmail.com</span>
-            </li>
-            <li>
-              <strong className="font-bold text-black">Ciudad:</strong>{" "}
-              <span className="text-black">Neiva, Huila</span>
-            </li>
-          </ul>
+        <div className="bg-white p-6 rounded shadow-md flex flex-col md:flex-row items-center gap-8 justify-center">
+          {/* Persona 1 */}
+          <div className="flex-1 flex flex-col items-center">
+            <div className="w-20 h-20 rounded-full bg-amber-300 flex items-center justify-center mb-2">
+              <span className="text-3xl font-bold text-amber-900">L</span>
+            </div>
+            <div className="text-center">
+              <div className="font-bold text-black">Lizeth Gasca</div>
+              <div className="text-black text-sm">Email: Lizethgasca990@gmail.com</div>
+              <div className="text-black text-sm">Ciudad: Neiva, Huila</div>
+            </div>
+          </div>
+          {/* Persona 2 */}
+          <div className="flex-1 flex flex-col items-center">
+            <div className="w-20 h-20 rounded-full bg-indigo-400 flex items-center justify-center mb-2">
+              <span className="text-3xl font-bold text-indigo-50">C</span>
+            </div>
+            <div className="text-center">
+              <div className="font-bold text-black">Cristian Muñoz</div>
+              <div className="text-black text-sm">Email: Cristiandaniel8080@gmail.com</div>
+              <div className="text-black text-sm">Ciudad: Neiva, Huila</div>
+            </div>
+          </div>
         </div>
         <div className="bg-white p-6 rounded shadow-md mt-4">
           <form
             className="flex flex-col gap-4"
-            action="https://formspree.io/f/mvgbdwvk" //Link for Formspree
+            action="https://formspree.io/f/mvgbdwvk"//Link de Formspree
             method="POST"
           >
             <input
