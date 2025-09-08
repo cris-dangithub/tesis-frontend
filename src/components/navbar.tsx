@@ -1,6 +1,6 @@
 "use client";
 import Link from 'next/link';
-import { Heart } from 'lucide-react';
+import { PencilRuler } from 'lucide-react';
 import { usePathname } from "next/navigation";
 // import { Button } from '@/components/ui/button';
 import NavButton from './ui/nav-button';
@@ -19,7 +19,7 @@ export function Navbar() {
                   href="/"
                   className="flex items-center gap-2 font-semibold text-xl text-black"
                >
-                  <Heart className="h-6 w-6 fill-green-500 text-green-500" />
+                  <PencilRuler className="fill-green-300" />
                </Link>
 
                <div className="flex items-center gap-6 mx-6">

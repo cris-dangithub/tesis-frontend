@@ -5,7 +5,6 @@ import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
 import { PresignedURLManagerService } from '@/lib/services/lambda';
-import { BUCKET_NAME } from '@/lib/constants/services';
 
 export function FileUpload() {
    const [files, setFiles] = useState<File[]>([]);
