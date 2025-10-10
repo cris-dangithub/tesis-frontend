@@ -11,7 +11,7 @@ export interface FilesResponse {
   timestamp: string;
 }
 
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = 'http://localhost:5050';
 
 export class FilesService {
   static async getFiles(): Promise<FilesResponse> {
