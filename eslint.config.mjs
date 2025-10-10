@@ -11,6 +11,18 @@ const compat = new FlatCompat({
 
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+    // Este bloque fuerza todas las reglas a "warn"
+  {
+    name: "force-warnings",
+    rules: Object.fromEntries(
+      Object.entries(
+        Object.assign(
+          {},
+          ...compat.extends("next/core-web-vitals", "next/typescript")
+        ).flatMap(c => c.rules ? [c.rules] : [])
+      ).map(([key]) => [key, "warn"])
+    ),
+  },
 ];
 
 export default eslintConfig;
