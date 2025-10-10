@@ -1,22 +1,57 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
 import { PresignedURLManagerService } from '@/lib/services/lambda';
+import { FilesService, FileInfo } from '@/lib/services/files';
 
 export function FileUpload() {
    const [files, setFiles] = useState<File[]>([]);
    const [loadingSendButton, setLoadingSendButton] = useState(false);
-   const [documentNumber, setDocumentNumber] = useState<string>(''); // Estado para el número de documento
+   const [alternativeName, setAlternativeName] = useState<string>(''); 
+   const [existingFiles, setExistingFiles] = useState<FileInfo[]>([]);
+   const [fileConflict, setFileConflict] = useState<boolean>(false);
+   const [suggestedName, setSuggestedName] = useState<string>('');
+
+   // Load existing files on component mount
+   useEffect(() => {
+      loadExistingFiles();
+   }, []);
+
+   const loadExistingFiles = async () => {
+      try {
+         const response = await FilesService.getFiles();
+         setExistingFiles(response.files);
+      } catch (error) {
+         console.error('Error loading existing files:', error);
+      }
+   };
 
    const onDrop = useCallback(async (acceptedFiles: File[]) => {
       console.log({ acceptedFiles });
       if (acceptedFiles.length > 0) {
          setFiles(acceptedFiles);
+         checkFileConflict(acceptedFiles[0]);
       }
-   }, []);
+   }, [existingFiles]);
+
+   const checkFileConflict = (file: File) => {
+      const existingFileNames = existingFiles.map(f => f.name);
+      const hasConflict = existingFileNames.includes(file.name);
+      
+      setFileConflict(hasConflict);
+      
+      if (hasConflict) {
+         const suggested = FilesService.generateSafeName(file.name, existingFileNames);
+         setSuggestedName(suggested);
+         setAlternativeName(suggested);
+      } else {
+         setSuggestedName('');
+         setAlternativeName('');
+      }
+   };
 
    const { getRootProps, getInputProps, isDragActive } = useDropzone({
       onDrop,
@@ -28,15 +63,29 @@ export function FileUpload() {
    });
 
    const handleSend = async () => {
-      if (files.length === 0 || !documentNumber) {
-         console.log(
-            'No hay archivos para enviar o el número de documento no está rellenado'
-         );
+      if (files.length === 0) {
+         console.log('No hay archivos para enviar');
+         return;
+      }
+
+      if (fileConflict && !alternativeName.trim()) {
+         alert('Debe proporcionar un nombre alternativo para el archivo');
+         return;
+      }
+
+      // Use local upload instead of cloud upload
+      await handleLocalUpload();
+   };
+
+   // Cloud upload function (preserved but not used)
+   const handleCloudUpload = async () => {
+      if (files.length === 0) {
+         console.log('No hay archivos para enviar');
          return;
       }
 
       const file = files[0];
-      const newFileName = `${documentNumber}-BASE.xlsx`; // Nuevo nombre del archivo
+      const newFileName = alternativeName.trim() || file.name;
 
       try {
          setLoadingSendButton(true);
@@ -72,10 +121,65 @@ export function FileUpload() {
          }
 
          setFiles([]);
-         setDocumentNumber(''); // Limpiar el campo del número de documento
+         setAlternativeName(''); // Limpiar el campo del nombre alternativo
          console.log('Archivo subido con éxito a S3');
       } catch (error) {
          console.error('Error manejando el archivo:', error);
+      } finally {
+         setLoadingSendButton(false);
+      }
+   };
+
+   // Local upload function
+   const handleLocalUpload = async () => {
+      if (files.length === 0) {
+         console.log('No hay archivos para enviar');
+         return;
+      }
+
+      const file = files[0];
+
+      try {
+         setLoadingSendButton(true);
+
+         // Create FormData for local upload
+         const formData = new FormData();
+         formData.append('file', file);
+         
+         if (alternativeName.trim()) {
+            formData.append('alternativeName', alternativeName.trim());
+         }
+
+         // Upload to local backend
+         const uploadResponse = await fetch('http://localhost:5050/upload', {
+            method: 'POST',
+            body: formData,
+         });
+
+         if (!uploadResponse.ok) {
+            const errorData = await uploadResponse.json();
+            throw new Error(errorData.message || `Error al subir el archivo: ${uploadResponse.statusText}`);
+         }
+
+         const responseData = await uploadResponse.json();
+         
+         setFiles([]);
+         setAlternativeName(''); // Limpiar el campo del nombre alternativo
+         setFileConflict(false);
+         setSuggestedName('');
+         
+         // Reload existing files to update the list
+         await loadExistingFiles();
+         
+         console.log('Archivo subido con éxito al servidor local:', responseData);
+         
+         // You can add a success message here if needed
+         alert('Archivo subido exitosamente');
+         
+      } catch (error) {
+         console.error('Error subiendo archivo:', error);
+         const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+         alert(`Error: ${errorMessage}`);
       } finally {
          setLoadingSendButton(false);
       }
@@ -128,33 +232,47 @@ export function FileUpload() {
                         </li>
                      ))}
                   </ul>
+                  
+                  {fileConflict && (
+                     <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-yellow-800 text-sm mb-2">
+                           ⚠️ Ya existe un archivo con este nombre. Debe proporcionar un nombre alternativo.
+                        </p>
+                     </div>
+                  )}
                </div>
             )}
          </div>
 
          <div className="mt-8 text-center">
-            <div className="mb-4">
-               <input
-                  type="text"
-                  value={documentNumber}
-                  onChange={e => {
-                     const value = e.target.value;
-                     if (/^\d*$/.test(value)) {
-                        // Solo permite números
-                        setDocumentNumber(value);
-                     }
-                  }}
-                  placeholder="Número de documento (Para identificar el archivo)"
-                  className="w-full p-3 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-               />
-            </div>
+            {fileConflict && (
+               <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                     Nombre alternativo (requerido)
+                  </label>
+                  <input
+                     type="text"
+                     value={alternativeName}
+                     onChange={(e) => setAlternativeName(e.target.value)}
+                     placeholder="Ingrese un nombre alternativo para el archivo"
+                     className="w-full p-3 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {suggestedName && (
+                     <p className="text-xs text-gray-500 mt-1">
+                        Sugerencia: {suggestedName}
+                     </p>
+                  )}
+               </div>
+            )}
 
             <Button
                size="lg"
                onClick={handleSend}
                className="bg-blue-600 hover:bg-blue-800 text-lg px-8 py-4 rounded-lg"
                disabled={
-                  files.length === 0 || !documentNumber || loadingSendButton
+                  files.length === 0 || 
+                  (fileConflict && !alternativeName.trim()) || 
+                  loadingSendButton
                }
                loading={loadingSendButton}
             >

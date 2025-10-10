@@ -39,6 +39,13 @@ export function Navbar() {
                      }
                      content="CONTÁCTANOS"
                   />
+                  <NavButton
+                     to="/archivos"
+                     status={
+                        pathname === "/archivos" ? "active" : "inactive"
+                     }
+                     content="ARCHIVOS"
+                  />
                   {/* <div className="relative group">
                   <button className="text-gray-700 hover:text-gray-900 font-medium flex items-center gap-1">
                      CONVERTIR PDF
