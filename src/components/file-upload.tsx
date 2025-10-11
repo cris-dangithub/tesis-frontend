@@ -4,16 +4,18 @@ import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
-import { PresignedURLManagerService } from '@/lib/services/lambda';
-import { BUCKET_NAME } from '@/lib/constants/services';
+import { useRouter } from 'next/navigation';
 
 export function FileUpload() {
    const [files, setFiles] = useState<File[]>([]);
    const [loadingSendButton, setLoadingSendButton] = useState(false);
-   const [documentNumber, setDocumentNumber] = useState<string>(''); // Estado para el número de documento
+   const [documentNumber, setDocumentNumber] = useState<string>('');
+   const [backendError, setBackendError] = useState<string | null>(null);
+   const [perfil, setPerfil] = useState<string>('balanceado'); // Nuevo estado
+
+   const router = useRouter();
 
    const onDrop = useCallback(async (acceptedFiles: File[]) => {
-      console.log({ acceptedFiles });
       if (acceptedFiles.length > 0) {
          setFiles(acceptedFiles);
       }
@@ -22,60 +24,64 @@ export function FileUpload() {
    const { getRootProps, getInputProps, isDragActive } = useDropzone({
       onDrop,
       accept: {
-         'application/xlsx': ['.xlsx'],
+         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
       },
       maxFiles: 1,
       multiple: false,
    });
 
    const handleSend = async () => {
+      console.log('CLICK ENVIAR');
+      setBackendError(null);
+
       if (files.length === 0 || !documentNumber) {
-         console.log(
-            'No hay archivos para enviar o el número de documento no está rellenado'
-         );
+         setBackendError('No hay archivos para enviar o el número de documento no está rellenado');
          return;
       }
 
       const file = files[0];
-      const newFileName = `${documentNumber}-BASE.xlsx`; // Nuevo nombre del archivo
+      const newFileName = `${documentNumber}-BASE.xlsx`;
 
       try {
          setLoadingSendButton(true);
-         const presignedURLResponse = await PresignedURLManagerService({
-            event_name: 'post-presigned-url',
-            object_key: `BASE/${newFileName}`,
-         });
-         if (!presignedURLResponse) {
-            throw new Error('Error al obtener la URL prefirmada');
-         }
 
-         const { url, fields } = presignedURLResponse; // Asegúrate de que la respuesta incluya "url" y "fields"
-
-         // Crea un objeto FormData y agrega los campos adicionales
          const formData = new FormData();
-         Object.keys(fields).forEach(key => {
-            formData.append(key, fields[key]);
-         });
+         formData.append('file', file, newFileName);
+         formData.append('documentNumber', documentNumber);
+         formData.append('perfil', perfil); // Enviar el perfil al backend
 
-         // Agrega el archivo al FormData con la clave "file"
-         formData.append('file', file, newFileName); // Usar el nuevo nombre del archivo
-
-         // Sube el archivo a S3 usando la URL prefirmada y el FormData
-         const uploadResponse = await fetch(url, {
-            method: 'POST', // Usa POST si la URL prefirmada lo requiere
+         const response = await fetch('http://localhost:5000/upload', {
+            method: 'POST',
             body: formData,
          });
 
-         if (!uploadResponse.ok) {
-            throw new Error(
-               `Error al subir el archivo: ${uploadResponse.statusText}`
-            );
+         let data = null;
+         try {
+            data = await response.json();
+            console.log('Respuesta del backend:', data);
+         } catch (e) {
+            setBackendError('El backend no devolvió una respuesta válida.');
+            return;
+         }
+
+         if (!response.ok || !data || !data.document_number) {
+            setBackendError(data?.error || `Error al subir el archivo: ${response.statusText}`);
+            return;
          }
 
          setFiles([]);
-         setDocumentNumber(''); // Limpiar el campo del número de documento
-         console.log('Archivo subido con éxito a S3');
-      } catch (error) {
+         setDocumentNumber('');
+
+         // Guarda los datos en localStorage
+         localStorage.setItem('resultados', JSON.stringify(data.resultados));
+         localStorage.setItem('metricas', JSON.stringify(data.metricas));
+         localStorage.setItem('columnas', JSON.stringify(data.columns));
+         localStorage.setItem('cartilla', JSON.stringify(data.cartilla));
+
+         // Redirige solo con el document_number
+         router.push(`/resultados?document_number=${data.document_number}`);
+      } catch (error: any) {
+         setBackendError('Error manejando el archivo: ' + (error?.message || error));
          console.error('Error manejando el archivo:', error);
       } finally {
          setLoadingSendButton(false);
@@ -141,13 +147,28 @@ export function FileUpload() {
                   onChange={e => {
                      const value = e.target.value;
                      if (/^\d*$/.test(value)) {
-                        // Solo permite números
                         setDocumentNumber(value);
                      }
                   }}
                   placeholder="Número de documento (Para identificar el archivo)"
                   className="w-full p-3 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                />
+            </div>
+
+            {/* Selector de método de optimización */}
+            <div className="mb-4">
+               <label className="block mb-2 font-semibold text-gray-700">
+                  Método de optimización
+               </label>
+               <select
+                  value={perfil}
+                  onChange={e => setPerfil(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-black"
+               >
+                  <option value="balanceado">Balanceado (recomendado)</option>
+                  <option value="rapido">Rápido</option>
+                  <option value="intensivo">Intensivo</option>
+               </select>
             </div>
 
             <Button
@@ -161,6 +182,12 @@ export function FileUpload() {
             >
                Enviar
             </Button>
+
+            {backendError && (
+               <div className="mt-4 text-red-600 font-semibold">
+                  {backendError}
+               </div>
+            )}
          </div>
       </div>
    );

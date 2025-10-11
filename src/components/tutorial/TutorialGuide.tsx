@@ -27,7 +27,7 @@ const pasos: Paso[] = [
         <br />
         Puedes descargar la plantilla aquí:{" "}
         <a
-          href="/Planilla_Cartilla.xlsx"
+          href="/Plantilla_Cartilla.xlsx"
           download
           className="text-green-600 underline hover:text-green-800 font-semibold"
         >
@@ -75,6 +75,18 @@ const glosario = [
   {
     termino: "Método Búfalo",
     definicion: "Técnica de optimización utilizada para determinar la mejor manera de cortar barras de acero, minimizando el desperdicio y maximizando la eficiencia en el uso del material.",
+  },
+  {
+    termino: "Método rápido",
+    definicion: "Ejecuta la optimización en menos tiempo, usando menos ciclos y población. Es útil para obtener resultados rápidos, aunque puede sacrificar algo de eficiencia.",
+  },
+  {
+    termino: "Método balanceado",
+    definicion: "Ofrece un equilibrio entre velocidad y eficiencia. Es la opción recomendada para la mayoría de los casos, ya que da buenos resultados en un tiempo razonable.",
+  },
+  {
+    termino: "Método intensivo",
+    definicion: "Busca la máxima eficiencia posible usando más ciclos y población, aunque tarde más tiempo en encontrar la mejor solución. Ideal cuando se quiere minimizar el desperdicio al máximo.",
   },
   {
     termino: "Cartilla de acero",
