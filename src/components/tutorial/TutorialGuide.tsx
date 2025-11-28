@@ -19,7 +19,7 @@ const pasos: Paso[] = [
     titulo: "Subir tu cartilla",
     descripcion: (
       <>
-        Selecciona 'SUBIR CARTILLA' en la barra de navegación. Haz clic en el botón para seleccionar tu archivo.
+        Selecciona &apos;SUBIR CARTILLA&apos; en la barra de navegación. Haz clic en el botón para seleccionar tu archivo.
         <br />
         <span className="font-bold text-black">
           Solo se aceptan archivos en formato XLSX que sigan la plantilla establecida.

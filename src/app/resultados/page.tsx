@@ -1,16 +1,32 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
 
-export default function ResultadosPage() {
+interface Resultado {
+  [key: string]: string | number;
+}
+
+interface Metricas {
+  [key: string]: string | number;
+}
+
+interface Columna {
+  name: string;
+  type?: string;
+}
+
+interface Cartilla {
+  [key: string]: string | number;
+}
+
+function ResultadosContent() {
   const searchParams = useSearchParams();
   const document_number = searchParams.get('document_number') || '';
-  const [resultados, setResultados] = useState<any[]>([]);
-  const [metricas, setMetricas] = useState<any>({});
-  const [columnas, setColumnas] = useState<any[]>([]);
-  const [cartilla, setCartilla] = useState<any[]>([]);
+  const [resultados, setResultados] = useState<Resultado[]>([]);
+  const [metricas, setMetricas] = useState<Metricas>({});
+  const [columnas, setColumnas] = useState<Columna[]>([]);
+  const [cartilla, setCartilla] = useState<Cartilla[]>([]);
   const [loading, setLoading] = useState(false); // Estado para el loader
 
   // Recupera los datos de localStorage al montar el componente
@@ -28,7 +44,13 @@ export default function ResultadosPage() {
     }
     setLoading(true); // Mostrar loader
     try {
-      const bodyData: any = {
+      const bodyData: {
+        resultados: Resultado[];
+        metricas: Metricas;
+        columnas: Columna[];
+        document_number: string;
+        cartilla?: Cartilla[];
+      } = {
         resultados,
         metricas,
         columnas,
@@ -58,8 +80,9 @@ export default function ResultadosPage() {
       localStorage.removeItem('metricas');
       localStorage.removeItem('columnas');
       localStorage.removeItem('cartilla');
-    } catch (error: any) {
-      alert('No se pudo descargar el PDF: ' + (error?.message || error));
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      alert('No se pudo descargar el PDF: ' + errorMessage);
     } finally {
       setLoading(false); // Ocultar loader
     }
@@ -84,5 +107,13 @@ export default function ResultadosPage() {
       )}
       <p className="text-gray-600 text-lg">Haz clic en el botón para descargar tu reporte optimizado en PDF.</p>
     </div>
+  );
+}
+
+export default function ResultadosPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-[60vh]">Cargando...</div>}>
+      <ResultadosContent />
+    </Suspense>
   );
 }

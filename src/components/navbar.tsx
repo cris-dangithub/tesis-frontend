@@ -25,6 +25,7 @@ export function Navbar() {
                <div className="flex items-center gap-6 mx-6">
                   <NavButton to="/" status={pathname === "/" ? "active" : "inactive"} content="INICIO" />
                   <NavButton to="/subir-cartilla" status={pathname === "/subir-cartilla" ? "active" : "inactive"} content="SUBIR CARTILLA" />
+                  <NavButton to="/archivos" status={pathname === "/archivos" ? "active" : "inactive"} content="ARCHIVOS" />
                   <NavButton
                      to="/tutorial"
                      status={

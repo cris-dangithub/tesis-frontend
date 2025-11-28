@@ -1,15 +1,19 @@
 "use client";
 import React from "react";
+import Image from "next/image";
 
 export default function Inicio() {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-green-100 via-white to-green-200 px-4">
       {/* Imagen de fondo */}
-      <img
+      <Image
         src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
         alt="Barras de acero apiladas"
         className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
         style={{ zIndex: 0 }}
+        fill
+        sizes="100vw"
+        priority
       />
       {/* Contenido principal */}
       <div className="relative max-w-2xl w-full text-center py-16" style={{ zIndex: 1 }}>
